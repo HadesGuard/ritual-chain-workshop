@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
-import aiJudgeAbi from "@/abi/AIJudge";
+import sealedVerdictAbi from "@/abi/SealedVerdict";
 import { contractAddress, executorAddress } from "@/config/contract";
 import { ritualChain } from "@/config/wagmi";
-import type { Bounty } from "@/lib/bounty";
+import { revealDeadline, type Bounty } from "@/lib/bounty";
+import { useNow } from "@/hooks/useNow";
 import { buildJudgeAllLlmInput, type JudgeSubmission } from "@/lib/ritualLlm";
 import { useWriteTx } from "@/hooks/useWriteTx";
 import { useRitualWalletStatus } from "@/hooks/useRitualWalletStatus";
@@ -35,10 +36,13 @@ export function JudgeAll({
   // contract) — judgeAll spends prepaid+locked RITUAL via the LLM precompile.
   const walletStatus = useRitualWalletStatus(address);
 
+  const now = useNow();
   const count = Number(bounty.submissionCount);
+  const revealOver = now / 1000 >= Number(revealDeadline(bounty));
 
-  // Gate per spec: owner only, has submissions, not yet judged.
-  if (!isOwner || bounty.judged || bounty.finalized || count === 0) {
+  // Gate per spec: owner only, has submissions, reveal window closed, not yet
+  // judged. The contract enforces all of this too; we just avoid dead UI.
+  if (!isOwner || bounty.judged || bounty.finalized || count === 0 || !revealOver) {
     return null;
   }
 
@@ -47,17 +51,21 @@ export function JudgeAll({
     setGatherError(null);
     setGathering(true);
     try {
-      // 1–2. Load every submission for this bounty.
-      const submissions: JudgeSubmission[] = [];
-      for (let i = 0; i < count; i++) {
-        const [submitter, answer] = await publicClient.readContract({
-          address: contractAddress,
-          abi: aiJudgeAbi,
-          functionName: "getSubmission",
-          args: [bountyId, BigInt(i)],
-        });
-        submissions.push({ index: i, submitter, answer });
+      // 1–2. Load every *revealed* submission; sealed ones are not eligible.
+      const [indexes, submitters, answers] = await publicClient.readContract({
+        address: contractAddress,
+        abi: sealedVerdictAbi,
+        functionName: "getRevealedAnswers",
+        args: [bountyId],
+      });
+      if (indexes.length === 0) {
+        throw new Error("No revealed answers to judge.");
       }
+      const submissions: JudgeSubmission[] = indexes.map((idx, j) => ({
+        index: Number(idx),
+        submitter: submitters[j],
+        answer: answers[j],
+      }));
 
       // 3–4. Build the batch judging prompt and encode the Ritual LLM request.
       const llmInput = buildJudgeAllLlmInput({
@@ -72,7 +80,7 @@ export function JudgeAll({
       // 5. Submit it on-chain.
       await tx.run({
         address: contractAddress,
-        abi: aiJudgeAbi,
+        abi: sealedVerdictAbi,
         functionName: "judgeAll",
         args: [bountyId, llmInput],
         chainId: ritualChain.id,
@@ -93,8 +101,8 @@ export function JudgeAll({
   return (
     <Card>
       <CardHeader
-        title="Judge all submissions"
-        subtitle="Sends one Ritual LLM request ranking every submission."
+        title="Judge all revealed answers"
+        subtitle="Sends one Ritual LLM request ranking every revealed submission."
       />
       <CardBody className="space-y-3">
         <Notice tone="indigo">AI review is advisory. The bounty owner finalizes the winner.</Notice>
@@ -104,14 +112,14 @@ export function JudgeAll({
         <Button onClick={handleJudge} disabled={busy || !fundingReady} className="w-full">
           {gathering ? (
             <>
-              <Spinner /> Gathering {count} submissions…
+              <Spinner /> Gathering revealed answers…
             </>
           ) : tx.isBusy ? (
             "Judging…"
           ) : !fundingReady ? (
             "Fund RitualWallet to judge"
           ) : (
-            `Judge all (${count})`
+            "Judge revealed answers"
           )}
         </Button>
         {gatherError && <Notice tone="red">{gatherError}</Notice>}

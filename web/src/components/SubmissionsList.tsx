@@ -1,7 +1,7 @@
 "use client";
 
 import { useReadContract } from "wagmi";
-import aiJudgeAbi from "@/abi/AIJudge";
+import sealedVerdictAbi from "@/abi/SealedVerdict";
 import { contractAddress } from "@/config/contract";
 import { ritualChain } from "@/config/wagmi";
 import { shortenAddress } from "@/lib/format";
@@ -25,7 +25,7 @@ export function SubmissionsList({
     <Card>
       <CardHeader
         title="Submissions"
-        subtitle="All submissions are judged together after the deadline."
+        subtitle="Sealed until their owner reveals. Only revealed answers are judged."
         action={<Badge tone="zinc">{count}</Badge>}
       />
       <CardBody className="space-y-3">
@@ -63,7 +63,7 @@ function SubmissionRow({
 }) {
   const { data, isLoading } = useReadContract({
     address: contractAddress,
-    abi: aiJudgeAbi,
+    abi: sealedVerdictAbi,
     functionName: "getSubmission",
     args: [bountyId, BigInt(index)],
     chainId: ritualChain.id,
@@ -71,7 +71,9 @@ function SubmissionRow({
   });
 
   const submitter = data?.[0];
-  const answer = data?.[1];
+  const commitment = data?.[1];
+  const answer = data?.[2];
+  const revealed = data?.[3];
 
   return (
     <div
@@ -91,6 +93,7 @@ function SubmissionRow({
           </span>
         </div>
         <div className="flex items-center gap-1.5">
+          {revealed === false ? <Badge tone="amber">Sealed</Badge> : null}
           {ranking ? <Badge tone="zinc">score {ranking.score}</Badge> : null}
           {isWinner ? (
             <Badge tone="green">Winner</Badge>
@@ -100,9 +103,19 @@ function SubmissionRow({
         </div>
       </div>
 
-      <p className="mt-2 whitespace-pre-wrap break-words text-sm text-zinc-200">
-        {answer ?? (isLoading ? "" : "-")}
-      </p>
+      {revealed ? (
+        <p className="mt-2 whitespace-pre-wrap break-words text-sm text-zinc-200">
+          {answer}
+        </p>
+      ) : (
+        <p className="mt-2 break-all font-mono text-xs text-zinc-500">
+          {commitment
+            ? `commitment ${commitment}`
+            : isLoading
+              ? ""
+              : "-"}
+        </p>
+      )}
 
       {ranking?.reason ? (
         <p className="mt-2 border-t border-white/5 pt-2 text-xs text-zinc-400">

@@ -60,10 +60,11 @@ createBounty(title, rubric, deadline)   owner funds reward (msg.value)
 | Multiple submissions per address | One per address (`already submitted`) |
 
 `createBounty`, `judgeAll`, `finalizeWinner`, `getBounty` signatures are
-unchanged, so ignition module and most of the web ABI still work.
-**Frontend note:** `web/` still calls `submitAnswer` and the old
-`getSubmission` shape; it needs updating to the commit/reveal flow (compute
-the commitment client-side, store the salt in localStorage until reveal).
+unchanged, so the ignition module and most of the web ABI still work.
+The `web/` frontend is updated to the commit/reveal flow: the commitment is
+hashed client-side with a random salt (`web/src/lib/commitment.ts`), the salt
+is kept in localStorage until reveal, the submissions list shows sealed
+entries as commitment hashes, and judging reads `getRevealedAnswers`.
 
 ## Test plan (reveal cases)
 
@@ -135,6 +136,11 @@ inside `judgeAll`, and never write plaintext on-chain at all. Then the only
 place plaintext ever exists is inside the TEE. The commit-reveal version here
 is the chain-agnostic baseline the assignment requires; the encrypted variant
 trades that portability for full hiding.
+
+**Advanced track implementation:** this repo also implements the Ritual-native
+design as [contracts/RitualHiddenBounty.sol](contracts/RitualHiddenBounty.sol)
+(encrypted submissions, batch digest, TEE-attested winner, 15 tests). Flow
+diagram and the full design writeup are in [ADVANCED-TRACK.md](ADVANCED-TRACK.md).
 
 ## Reflection
 

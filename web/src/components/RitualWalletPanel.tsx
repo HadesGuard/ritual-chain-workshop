@@ -14,7 +14,7 @@ type Status = Partial<RitualWalletStatus> & { isLoading: boolean; hasData: boole
 /**
  * RitualWallet funding preflight shown above "Judge all". Surfaces the current
  * balance / lock vs. the live block, and lets the owner deposit + lock LLM fees
- * without touching the bounty reward (that stays in the AIJudge contract).
+ * without touching the bounty reward (that stays in the SealedVerdict contract).
  */
 export function RitualWalletPanel({
   status,
