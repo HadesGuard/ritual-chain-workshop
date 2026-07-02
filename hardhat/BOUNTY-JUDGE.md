@@ -5,10 +5,11 @@ deadline passes; only verified reveals are eligible for Ritual LLM batch judging
 
 ## Deployment (Ritual chain, chainId 1979)
 
-- Contract: `0x9eA7235d9D9870c53EA41868C84EAD757ee86e3c`
-- Deploy tx: `0x6779c6b51f62b11f1a211d50162951588ed6511d0093e0141fe8b35111b2e570`
+- Contract: `0x712A26E121c12F2e6D576a7CE5A2be21Be939652` (`SealedVerdict`)
+- Deploy tx: `0xb6749b72e181d5f258c7ad2058310ba14faefd6d838187bcf8fd7b2510cf1a30`
 - Deployer: `0xB6F30F2577FC57ec3c46d79438f10EFC85a504a1`
 - Deployed via Hardhat Ignition (`ignition/modules/SealedVerdict.ts`)
+- Earlier deployment (same code, old `AIJudge` name): `0x9eA7235d9D9870c53EA41868C84EAD757ee86e3c`
 
 ## Lifecycle
 
