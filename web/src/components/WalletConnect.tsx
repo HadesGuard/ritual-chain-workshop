@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useAccount,
   useConnect,
@@ -10,7 +10,7 @@ import {
 } from "wagmi";
 import { ritualChain } from "@/config/wagmi";
 import { shortenAddress } from "@/lib/format";
-import { Button, Badge } from "@/components/ui";
+import { Button } from "@/components/ui";
 
 export function WalletConnect() {
   const { address, isConnected } = useAccount();
@@ -19,6 +19,17 @@ export function WalletConnect() {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close the connector menu on any outside click.
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
 
   const wrongChain = isConnected && chainId !== ritualChain.id;
 
@@ -30,10 +41,12 @@ export function WalletConnect() {
             variant="secondary"
             onClick={() => switchChain({ chainId: ritualChain.id })}
           >
-            Switch to {ritualChain.name}
+            Switch to {ritualChain.name} →
           </Button>
         ) : (
-          <Badge tone="green">{ritualChain.name}</Badge>
+          <span className="hidden font-mono text-[11px] uppercase tracking-[0.08em] text-stone sm:block">
+            {ritualChain.name} · {ritualChain.id}
+          </span>
         )}
         <Button variant="secondary" onClick={() => disconnect()}>
           {shortenAddress(address)}
@@ -51,14 +64,14 @@ export function WalletConnect() {
   });
 
   return (
-    <div className="relative">
+    <div className="relative" ref={ref}>
       <Button onClick={() => setOpen((v) => !v)} disabled={isPending}>
-        {isPending ? "Connecting…" : "Connect Wallet"}
+        {isPending ? "Connecting" : "Connect wallet"}
       </Button>
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-zinc-900 shadow-xl">
+        <div className="absolute right-0 z-20 mt-2 w-52 border border-emphasis bg-ink">
           {list.length === 0 && (
-            <div className="px-3 py-2 text-xs text-zinc-500">
+            <div className="px-3 py-2 font-mono text-[11px] text-mute">
               No wallet connectors found.
             </div>
           )}
@@ -69,7 +82,7 @@ export function WalletConnect() {
                 connect({ connector });
                 setOpen(false);
               }}
-              className="block w-full px-3 py-2 text-left text-sm text-zinc-200 hover:bg-white/10"
+              className="block w-full px-3 py-2 text-left font-mono text-[12px] uppercase tracking-[0.08em] text-paper transition-colors hover:bg-paper/[0.06]"
             >
               {connector.name}
             </button>

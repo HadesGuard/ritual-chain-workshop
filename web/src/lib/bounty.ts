@@ -77,11 +77,11 @@ export const STATUS_META: Record<
   BountyStatus,
   { label: string; tone: "green" | "amber" | "indigo" | "zinc" }
 > = {
-  open: { label: "Commit phase", tone: "green" },
-  reveal: { label: "Reveal phase", tone: "amber" },
-  ready: { label: "Ready for judging", tone: "amber" },
+  open: { label: "Commit open", tone: "green" },
+  reveal: { label: "Reveal open", tone: "amber" },
+  ready: { label: "Awaiting judgment", tone: "zinc" },
   judged: { label: "Judged", tone: "indigo" },
-  finalized: { label: "Finalized", tone: "zinc" },
+  finalized: { label: "Settled", tone: "green" },
 };
 
 /** Can a participant still commit an answer hash? */

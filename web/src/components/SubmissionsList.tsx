@@ -6,7 +6,7 @@ import { contractAddress } from "@/config/contract";
 import { ritualChain } from "@/config/wagmi";
 import { shortenAddress } from "@/lib/format";
 import type { JudgeResult } from "@/lib/aiReview";
-import { Card, CardHeader, CardBody, Badge } from "@/components/ui";
+import { Badge, CopyText, SkeletonBar } from "@/components/ui";
 
 export function SubmissionsList({
   bountyId,
@@ -21,30 +21,39 @@ export function SubmissionsList({
 }) {
   const indices = Array.from({ length: count }, (_, i) => i);
 
+  if (count === 0) {
+    return (
+      <div>
+        <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-stone">
+          No exhibits
+        </div>
+        <p className="mt-2 font-serif text-[18px] text-paper">
+          Commitments appear here as they are filed.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <Card>
-      <CardHeader
-        title="Submissions"
-        subtitle="Sealed until their owner reveals. Only revealed answers are judged."
-        action={<Badge tone="zinc">{count}</Badge>}
-      />
-      <CardBody className="space-y-3">
-        {count === 0 ? (
-          <p className="text-sm text-zinc-500">No submissions yet.</p>
-        ) : (
-          indices.map((i) => (
-            <SubmissionRow
-              key={i}
-              bountyId={bountyId}
-              index={i}
-              ranking={judge?.ranking?.find((r) => r.index === i)}
-              recommended={judge?.winnerIndex === i}
-              isWinner={finalWinner === i}
-            />
-          ))
-        )}
-      </CardBody>
-    </Card>
+    <div>
+      {/* Column heads */}
+      <div className="grid grid-cols-[3rem_1fr_5rem] gap-4 border-b border-rule pb-2 font-mono text-[11px] uppercase tracking-[0.08em] text-stone sm:grid-cols-[4rem_9rem_1fr_5rem]">
+        <span>Exh.</span>
+        <span className="hidden sm:block">Submitter</span>
+        <span>Content</span>
+        <span className="text-right">Score</span>
+      </div>
+      {indices.map((i) => (
+        <SubmissionRow
+          key={i}
+          bountyId={bountyId}
+          index={i}
+          ranking={judge?.ranking?.find((r) => r.index === i)}
+          recommended={judge?.winnerIndex === i}
+          isWinner={finalWinner === i}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -77,52 +86,66 @@ function SubmissionRow({
 
   return (
     <div
-      className={`rounded-xl border p-3 ${
-        isWinner
-          ? "border-emerald-500/40 bg-emerald-500/5"
-          : recommended
-            ? "border-indigo-500/40 bg-indigo-500/5"
-            : "border-white/10 bg-black/20"
+      className={`grid grid-cols-[3rem_1fr_5rem] items-start gap-4 border-t border-rule py-3 transition-colors sm:grid-cols-[4rem_9rem_1fr_5rem] ${
+        isWinner ? "bg-emerald/[0.08]" : "hover:bg-paper/[0.04]"
       }`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xs text-zinc-500">#{index}</span>
-          <span className="font-mono text-sm text-zinc-300">
-            {submitter ? shortenAddress(submitter) : isLoading ? "loading…" : "-"}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {revealed === false ? <Badge tone="amber">Sealed</Badge> : null}
-          {ranking ? <Badge tone="zinc">score {ranking.score}</Badge> : null}
-          {isWinner ? (
-            <Badge tone="green">Winner</Badge>
-          ) : recommended ? (
-            <Badge tone="indigo">AI pick</Badge>
-          ) : null}
-        </div>
+      <div className="font-mono text-[13px] text-stone">
+        {String(index).padStart(2, "0")}
       </div>
 
-      {revealed ? (
-        <p className="mt-2 whitespace-pre-wrap break-words text-sm text-zinc-200">
-          {answer}
-        </p>
-      ) : (
-        <p className="mt-2 break-all font-mono text-xs text-zinc-500">
-          {commitment
-            ? `commitment ${commitment}`
-            : isLoading
-              ? ""
-              : "-"}
-        </p>
-      )}
+      <div className="hidden font-mono text-[13px] text-paper sm:block">
+        {submitter ? (
+          <CopyText
+            value={submitter}
+            display={shortenAddress(submitter)}
+            className="text-[13px] text-paper"
+          />
+        ) : isLoading ? (
+          <SkeletonBar className="h-3 w-[11ch]" />
+        ) : (
+          "-"
+        )}
+      </div>
 
-      {ranking?.reason ? (
-        <p className="mt-2 border-t border-white/5 pt-2 text-xs text-zinc-400">
-          <span className="text-zinc-500">AI: </span>
-          {ranking.reason}
-        </p>
-      ) : null}
+      <div className="min-w-0">
+        {isLoading ? (
+          <SkeletonBar className="h-3 w-[24ch]" />
+        ) : revealed ? (
+          <p className="animate-seal-open whitespace-pre-wrap break-words text-[14px] leading-snug text-paper">
+            {answer}
+          </p>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="break-all bg-well px-2 py-1 font-mono text-[12px] text-stone">
+              {commitment}
+            </span>
+          </div>
+        )}
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          {revealed === false ? (
+            <Badge tone="amber" className="rotate-[-1.5deg]">
+              Sealed
+            </Badge>
+          ) : revealed ? (
+            <Badge tone="zinc">Revealed</Badge>
+          ) : null}
+          {recommended ? <Badge tone="indigo">AI pick</Badge> : null}
+          {isWinner ? <Badge tone="green">Judgment</Badge> : null}
+        </div>
+        {ranking?.reason ? (
+          <p className="mt-2 border-t border-rule pt-2 text-[13px] text-stone">
+            <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-mute">
+              Model note{" "}
+            </span>
+            {ranking.reason}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="text-right font-mono text-[13px] text-emerald-bright">
+        {ranking ? ranking.score : ""}
+      </div>
     </div>
   );
 }

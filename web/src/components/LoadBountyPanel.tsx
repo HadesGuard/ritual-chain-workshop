@@ -1,44 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader, CardBody, Field, Input, Button } from "@/components/ui";
+import { CardHeader, CardBody, Input, Button } from "@/components/ui";
 
 export function LoadBountyPanel({
-  selectedId,
-  onSelect,
+  onOpen,
   recentIds,
 }: {
-  selectedId: bigint | null;
-  onSelect: (id: bigint | null) => void;
+  onOpen: (id: bigint) => void;
   recentIds: string[];
 }) {
-  // `override === null` => show the current selection; typing takes over.
-  const [override, setOverride] = useState<string | null>(null);
-  const value =
-    override ?? (selectedId !== null ? selectedId.toString() : "");
+  const [value, setValue] = useState("");
 
   function load(raw: string) {
     const trimmed = raw.trim();
-    if (trimmed === "") {
-      onSelect(null);
-      return;
-    }
+    if (trimmed === "") return;
     try {
       const id = BigInt(trimmed);
       if (id < 0n) return;
-      onSelect(id);
+      onOpen(id);
     } catch {
       /* not a number — ignore */
     }
   }
 
   return (
-    <Card>
+    <div>
       <CardHeader
-        title="Load a bounty"
-        subtitle="Open any bounty by its numeric id."
+        index="03"
+        title="Docket"
+        subtitle="Retrieve a bounty by its number."
       />
-      <CardBody className="space-y-3">
+      <CardBody>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -46,45 +39,45 @@ export function LoadBountyPanel({
           }}
           className="flex items-end gap-2"
         >
-          <div className="flex-1">
-            <Field label="Bounty id">
-              <Input
-                inputMode="numeric"
-                value={value}
-                onChange={(e) => setOverride(e.target.value)}
-                placeholder="0"
-              />
-            </Field>
-          </div>
-          <Button type="submit">Load</Button>
+          <Input
+            inputMode="numeric"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="1"
+            className="w-32 font-mono"
+            aria-label="Bounty number"
+          />
+          <Button variant="secondary" type="submit">
+            Retrieve →
+          </Button>
         </form>
 
         {recentIds.length > 0 && (
-          <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">
-              Recent
+          <div className="mt-6">
+            <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.08em] text-stone">
+              Viewed
             </div>
-            <div className="flex flex-wrap gap-1.5">
+            <ul>
               {recentIds.map((id) => (
-                <button
-                  key={id}
-                  onClick={() => {
-                    setOverride(null);
-                    load(id);
-                  }}
-                  className={`rounded-lg px-2 py-1 font-mono text-xs ring-1 ring-inset transition-colors ${
-                    selectedId?.toString() === id
-                      ? "bg-indigo-500/20 text-indigo-200 ring-indigo-500/40"
-                      : "bg-black/20 text-zinc-300 ring-white/10 hover:bg-white/10"
-                  }`}
-                >
-                  #{id}
-                </button>
+                <li key={id}>
+                  <button
+                    onClick={() => load(id)}
+                    className="flex w-full items-baseline gap-4 border-t border-rule py-2.5 text-left transition-colors hover:bg-paper/[0.04]"
+                  >
+                    <span className="font-mono text-[12px] text-stone">
+                      No. {id}
+                    </span>
+                    <span className="ml-auto font-mono text-[12px] text-emerald-bright">
+                      →
+                    </span>
+                  </button>
+                </li>
               ))}
-            </div>
+              <li className="border-t border-emphasis" />
+            </ul>
           </div>
         )}
       </CardBody>
-    </Card>
+    </div>
   );
 }

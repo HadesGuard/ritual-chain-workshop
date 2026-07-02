@@ -1,110 +1,131 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { WalletConnect } from "@/components/WalletConnect";
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { CreateBountyForm } from "@/components/CreateBountyForm";
 import { LoadBountyPanel } from "@/components/LoadBountyPanel";
-import { BountyView } from "@/components/BountyView";
 import { useRecentBounties } from "@/hooks/useRecentBounties";
-import { isContractConfigured, contractAddress } from "@/config/contract";
-import { ritualChain } from "@/config/wagmi";
-import { shortenAddress } from "@/lib/format";
-import { Notice } from "@/components/ui";
+import { isContractConfigured } from "@/config/contract";
+import { Kicker, Notice } from "@/components/ui";
+
+const PROCEDURE = [
+  {
+    step: "01",
+    name: "Commit",
+    line: "Submit a hash, not an answer.",
+    detail: "keccak256(answer, salt, sender, id)",
+  },
+  {
+    step: "02",
+    name: "Reveal",
+    line: "Open the seal after the deadline.",
+    detail: "window = deadline + 86,400s",
+  },
+  {
+    step: "03",
+    name: "Judge",
+    line: "The model reads every revealed answer.",
+    detail: "on-chain LLM precompile",
+  },
+  {
+    step: "04",
+    name: "Settle",
+    line: "The owner enters judgment.",
+    detail: "reward released by the contract",
+  },
+];
 
 export default function Home() {
-  const [selectedId, setSelectedId] = useState<bigint | null>(null);
+  const router = useRouter();
   const { ids, add } = useRecentBounties();
 
-  // Track any opened bounty in the recent list too. `add` is a no-op when the
-  // id is already most-recent, so this won't loop.
-  useEffect(() => {
-    if (selectedId !== null) add(selectedId);
-  }, [selectedId, add]);
-
-  const handleCreated = useCallback(
+  const openBounty = useCallback(
     (id: bigint) => {
       add(id);
-      setSelectedId(id);
+      router.push(`/bounty/${id.toString()}`);
     },
-    [add],
+    [add, router],
   );
 
   return (
-    <div className="min-h-full">
-      {/* Top nav */}
-      <header className="sticky top-0 z-10 border-b border-white/10 bg-zinc-950/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-emerald-400 text-sm font-bold text-zinc-950">
-              AI
-            </div>
-            <div>
-              <h1 className="text-sm font-semibold leading-tight">AI Bounty Judge</h1>
-              <p className="text-[11px] leading-tight text-zinc-500">on {ritualChain.name}</p>
-            </div>
-          </div>
-          <WalletConnect />
+    <main className="mx-auto max-w-[1120px] px-5 sm:px-10">
+      {/* Opening statement */}
+      <section className="max-w-[720px] pb-16 pt-16">
+        <Kicker>Sealed-bid bounties, judged on chain</Kicker>
+        <h1 className="mt-3 font-serif text-[44px] font-medium leading-[1.06]">
+          Answers under seal. Verdicts on the record.
+        </h1>
+        <p className="mt-4 max-w-[68ch] text-[15px] leading-[1.6] text-stone">
+          Post a bounty with a rubric and an escrowed reward. Participants commit{" "}
+          <span className="font-mono text-[13px] text-paper">
+            keccak256(answer, salt, sender, id)
+          </span>{" "}
+          before the deadline and reveal after it. Ritual&rsquo;s on-chain model
+          scores every revealed answer. The owner enters judgment and the
+          contract pays the winner.
+        </p>
+        <div className="mt-6 flex items-center gap-5">
+          <a
+            href="#file"
+            className="inline-flex h-9 items-center rounded-[2px] bg-emerald px-4 font-mono text-[12px] uppercase tracking-[0.08em] text-paper transition-colors hover:bg-[#15583c]"
+          >
+            File a bounty →
+          </a>
+          <a
+            href="#procedure"
+            className="font-mono text-[12px] uppercase tracking-[0.08em] text-emerald-bright underline decoration-emerald-bright/40 underline-offset-4 hover:decoration-emerald-bright"
+          >
+            Read the procedure →
+          </a>
         </div>
-      </header>
+      </section>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        {/* Hero / explanation */}
-        <section className="mb-6">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Crowd-judged bounties, settled by AI.
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-            Submit answers to a bounty. After the deadline, Ritual AI ranks all submissions. The
-            bounty owner finalizes the winner.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-400">
-            <span className="rounded-full bg-white/5 px-3 py-1 ring-1 ring-inset ring-white/10">
-              AI review is advisory. The owner finalizes the winner.
-            </span>
-            <span className="rounded-full bg-white/5 px-3 py-1 ring-1 ring-inset ring-white/10">
-              All submissions are judged together after the deadline.
-            </span>
-            <span className="rounded-full bg-white/5 px-3 py-1 ring-1 ring-inset ring-white/10">
-              Only one winner receives the bounty reward.
-            </span>
-          </div>
-        </section>
+      {/* 01 Procedure */}
+      <section id="procedure" className="border-t border-rule pt-6">
+        <div className="flex gap-4">
+          <span className="font-mono text-[11px] tracking-[0.08em] text-stone">
+            01
+          </span>
+          <h2 className="font-serif text-[21px] font-medium">Procedure</h2>
+        </div>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {PROCEDURE.map((p, i) => (
+            <div
+              key={p.name}
+              className={`border-t border-rule py-4 sm:py-5 lg:border-t-0 ${
+                i > 0 ? "lg:border-l lg:border-rule lg:pl-5" : ""
+              }`}
+            >
+              <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-stone">
+                {p.step} · {p.name}
+              </div>
+              <p className="mt-2 font-serif text-[18px] leading-snug text-paper">
+                {p.line}
+              </p>
+              <p className="mt-2 font-mono text-[12px] text-stone">{p.detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        {!isContractConfigured && (
-          <div className="mb-6">
-            <Notice tone="amber">
-              No contract address configured. Copy <code className="font-mono">.env.example</code>{" "}
-              to <code className="font-mono">.env.local</code> and set{" "}
-              <code className="font-mono">NEXT_PUBLIC_CONTRACT_ADDRESS</code> to start interacting
-              on-chain.
-            </Notice>
-          </div>
-        )}
+      {!isContractConfigured && (
+        <div className="mt-6">
+          <Notice tone="amber">
+            Contract not configured. Set NEXT_PUBLIC_CONTRACT_ADDRESS to file and
+            retrieve bounties.
+          </Notice>
+        </div>
+      )}
 
-        {/* Dashboard: create + load */}
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <CreateBountyForm onCreated={handleCreated} />
-          <LoadBountyPanel selectedId={selectedId} onSelect={setSelectedId} recentIds={ids} />
-        </section>
+      {/* 02 File a bounty */}
+      <div id="file" className="mt-16 border-t border-rule">
+        <CreateBountyForm onCreated={openBounty} />
+      </div>
 
-        {/* Selected bounty */}
-        {selectedId !== null && (
-          <section className="mt-6">
-            <BountyView bountyId={selectedId} />
-          </section>
-        )}
-
-        <footer className="mt-10 border-t border-white/10 pt-4 text-xs text-zinc-600">
-          {contractAddress ? (
-            <>
-              Contract <span className="font-mono">{shortenAddress(contractAddress, 6)}</span> ·
-              Chain {ritualChain.id}
-            </>
-          ) : (
-            <>Workshop demo · {ritualChain.name}</>
-          )}
-        </footer>
-      </main>
-    </div>
+      {/* 03 Docket */}
+      <div className="mt-16 border-t border-rule">
+        <LoadBountyPanel onOpen={openBounty} recentIds={ids} />
+      </div>
+    </main>
   );
 }

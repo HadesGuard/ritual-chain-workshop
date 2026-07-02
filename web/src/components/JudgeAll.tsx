@@ -11,7 +11,7 @@ import { buildJudgeAllLlmInput, type JudgeSubmission } from "@/lib/ritualLlm";
 import { useWriteTx } from "@/hooks/useWriteTx";
 import { useRitualWalletStatus } from "@/hooks/useRitualWalletStatus";
 import { RitualWalletPanel } from "@/components/RitualWalletPanel";
-import { Card, CardHeader, CardBody, Button, TxStatus, Notice, Spinner } from "@/components/ui";
+import { Panel, PanelHeader, Button, TxStatus, Notice, Spinner } from "@/components/ui";
 
 const explorerBase = ritualChain.blockExplorers?.default.url;
 
@@ -99,32 +99,34 @@ export function JudgeAll({
   const fundingReady = walletStatus.ready === true;
 
   return (
-    <Card>
-      <CardHeader
-        title="Judge all revealed answers"
-        subtitle="Sends one Ritual LLM request ranking every revealed submission."
+    <Panel>
+      <PanelHeader
+        title="Submit for judgment"
+        subtitle="Sends one Ritual LLM request ranking every revealed answer against the rubric."
       />
-      <CardBody className="space-y-3">
-        <Notice tone="indigo">AI review is advisory. The bounty owner finalizes the winner.</Notice>
+      <div className="space-y-3">
+        <Notice tone="indigo">
+          The model recommends. The owner enters judgment.
+        </Notice>
 
         <RitualWalletPanel status={walletStatus} onDeposited={walletStatus.refetch} />
 
         <Button onClick={handleJudge} disabled={busy || !fundingReady} className="w-full">
           {gathering ? (
             <>
-              <Spinner /> Gathering revealed answers…
+              <Spinner /> Gathering revealed answers
             </>
           ) : tx.isBusy ? (
-            "Judging…"
+            "Judging"
           ) : !fundingReady ? (
             "Fund RitualWallet to judge"
           ) : (
-            "Judge revealed answers"
+            "Submit for judgment →"
           )}
         </Button>
         {gatherError && <Notice tone="red">{gatherError}</Notice>}
         <TxStatus state={tx.state} error={tx.error} hash={tx.hash} explorerBase={explorerBase} />
-      </CardBody>
-    </Card>
+      </div>
+    </Panel>
   );
 }

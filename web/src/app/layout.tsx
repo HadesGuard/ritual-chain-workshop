@@ -1,22 +1,30 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Newsreader, Schibsted_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const newsreader = Newsreader({
   subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-newsreader",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const schibsted = Schibsted_Grotesk({
   subsets: ["latin"],
+  variable: "--font-schibsted",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
 });
 
 export const metadata: Metadata = {
-  title: "AI Bounty Judge",
+  title: "SealedVerdict",
   description:
-    "Submit answers to a bounty. After the deadline, Ritual AI ranks all submissions. The bounty owner finalizes the winner.",
+    "Commit-reveal bounties judged by AI on Ritual chain. Answers stay sealed until the deadline; Ritual AI ranks revealed submissions; the owner enters judgment.",
 };
 
 export default function RootLayout({
@@ -27,10 +35,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${schibsted.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-zinc-950 text-zinc-100">
-        <Providers>{children}</Providers>
+      <body className="flex min-h-screen flex-col bg-ink text-paper">
+        <Providers>
+          <SiteHeader />
+          <div className="flex-1">{children}</div>
+          <SiteFooter />
+        </Providers>
       </body>
     </html>
   );

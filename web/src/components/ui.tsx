@@ -1,9 +1,9 @@
 "use client";
 
-import type { ReactNode, ButtonHTMLAttributes } from "react";
+import { useState, type ReactNode, type ButtonHTMLAttributes } from "react";
 import type { TxState } from "@/hooks/useWriteTx";
 
-/* ------------------------------------------------------------------ Card */
+/* ---------------------------------------------------- Card = ruled section */
 
 export function Card({
   children,
@@ -13,11 +13,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div
-      className={`rounded-2xl border border-white/10 bg-zinc-900/60 backdrop-blur shadow-xl shadow-black/20 ${className}`}
-    >
-      {children}
-    </div>
+    <section className={`border-t border-rule ${className}`}>{children}</section>
   );
 }
 
@@ -25,20 +21,32 @@ export function CardHeader({
   title,
   subtitle,
   action,
+  index,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
   action?: ReactNode;
+  /** Optional hanging mono index, e.g. "02". */
+  index?: string;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-white/10 px-5 py-4">
-      <div className="min-w-0">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-300">
-          {title}
-        </h2>
-        {subtitle ? (
-          <p className="mt-0.5 text-xs text-zinc-500">{subtitle}</p>
+    <div className="flex items-start justify-between gap-4 pt-6">
+      <div className="flex min-w-0 gap-4">
+        {index ? (
+          <span className="mt-1.5 font-mono text-[11px] tracking-[0.08em] text-stone">
+            {index}
+          </span>
         ) : null}
+        <div className="min-w-0">
+          <h2 className="font-serif text-[21px] font-medium leading-tight text-paper">
+            {title}
+          </h2>
+          {subtitle ? (
+            <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-stone">
+              {subtitle}
+            </p>
+          ) : null}
+        </div>
       </div>
       {action}
     </div>
@@ -52,31 +60,82 @@ export function CardBody({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`px-5 py-4 ${className}`}>{children}</div>;
+  return <div className={`pb-10 pt-4 ${className}`}>{children}</div>;
 }
 
-/* ----------------------------------------------------------------- Badge */
+/* ---------------------------------------- Panel = bordered action container */
+
+export function Panel({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`border border-rule p-5 ${className}`}>{children}</div>
+  );
+}
+
+export function PanelHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: ReactNode;
+  subtitle?: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h3 className="font-mono text-[11px] uppercase tracking-[0.08em] text-paper">
+          {title}
+        </h3>
+        {subtitle ? (
+          <p className="mt-1 text-[13px] leading-snug text-stone">{subtitle}</p>
+        ) : null}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+/* --------------------------------------------------------- Kicker / labels */
+
+export function Kicker({ children }: { children: ReactNode }) {
+  return (
+    <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-stone">
+      {children}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------ Badge / Stamp */
 
 type Tone = "green" | "amber" | "indigo" | "zinc" | "red";
 
-const TONES: Record<Tone, string> = {
-  green: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
-  amber: "bg-amber-500/15 text-amber-300 ring-amber-500/30",
-  indigo: "bg-indigo-500/15 text-indigo-300 ring-indigo-500/30",
-  zinc: "bg-zinc-500/15 text-zinc-300 ring-zinc-500/30",
-  red: "bg-red-500/15 text-red-300 ring-red-500/30",
+const STAMP: Record<Tone, string> = {
+  green: "border-emerald/60 text-emerald-bright bg-emerald/10",
+  amber: "border-gilt/60 text-gilt bg-gilt/10",
+  red: "border-seal/60 text-seal bg-seal/10",
+  zinc: "border-rule text-stone",
+  // The app's only inverted element (AI PICK / pending). Zero violet.
+  indigo: "border-paper bg-paper text-ink",
 };
 
 export function Badge({
   children,
   tone = "zinc",
+  className = "",
 }: {
   children: ReactNode;
   tone?: Tone;
+  className?: string;
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${TONES[tone]}`}
+      className={`inline-flex items-center gap-1 border px-1.5 py-[3px] font-mono text-[11px] uppercase tracking-[0.08em] ${STAMP[tone]} ${className}`}
     >
       {children}
     </span>
@@ -95,18 +154,18 @@ export function Button({
   children,
   ...rest
 }: ButtonProps) {
+  const base =
+    "inline-flex items-center justify-center gap-2 rounded-[2px] font-mono text-[12px] uppercase tracking-[0.08em] transition-colors duration-150 disabled:cursor-not-allowed";
   const styles: Record<string, string> = {
     primary:
-      "bg-indigo-500 text-white hover:bg-indigo-400 disabled:bg-indigo-500/40",
+      "h-9 px-4 bg-emerald text-paper hover:bg-[#15583c] disabled:bg-emerald/30 disabled:text-paper/50",
     secondary:
-      "bg-white/10 text-zinc-100 hover:bg-white/15 disabled:bg-white/5",
-    ghost: "bg-transparent text-zinc-300 hover:bg-white/5",
+      "h-9 px-4 border border-paper/25 text-paper hover:bg-paper/5 disabled:text-mute disabled:border-rule",
+    ghost:
+      "text-emerald-bright underline decoration-emerald-bright/40 underline-offset-4 hover:decoration-emerald-bright disabled:text-mute disabled:no-underline",
   };
   return (
-    <button
-      className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:text-zinc-400 ${styles[variant]} ${className}`}
-      {...rest}
-    >
+    <button className={`${base} ${styles[variant]} ${className}`} {...rest}>
       {children}
     </button>
   );
@@ -125,17 +184,21 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-zinc-400">
+      <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.08em] text-stone">
         {label}
       </span>
       {children}
-      {hint ? <span className="mt-1 block text-xs text-zinc-600">{hint}</span> : null}
+      {hint ? (
+        <span className="mt-1.5 block font-mono text-[11px] text-mute">
+          {hint}
+        </span>
+      ) : null}
     </label>
   );
 }
 
 const inputBase =
-  "w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-indigo-400/60 focus:outline-none focus:ring-1 focus:ring-indigo-400/40";
+  "w-full rounded-[2px] border border-paper/20 bg-well px-3 py-2 text-[15px] text-paper placeholder:text-mute focus:border-emerald-bright focus:outline-none focus:ring-1 focus:ring-emerald-bright";
 
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${inputBase} ${props.className ?? ""}`} />;
@@ -156,10 +219,10 @@ export function Textarea(
 
 const TX_LABEL: Record<TxState, string> = {
   idle: "",
-  wallet: "Waiting for wallet…",
-  pending: "Confirming on-chain…",
-  confirmed: "Confirmed",
-  failed: "Failed",
+  wallet: "AWAITING SIGNATURE",
+  pending: "PENDING",
+  confirmed: "CONFIRMED",
+  failed: "FAILED",
 };
 
 const TX_TONE: Record<TxState, Tone> = {
@@ -183,19 +246,22 @@ export function TxStatus({
 }) {
   if (state === "idle" && !error) return null;
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+    <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[12px]">
       <Badge tone={TX_TONE[state]}>
         {(state === "wallet" || state === "pending") && <Spinner />}
-        {state === "failed" && error ? error : TX_LABEL[state]}
+        {TX_LABEL[state]}
       </Badge>
+      {state === "failed" && error ? (
+        <span className="break-words text-seal">{error}</span>
+      ) : null}
       {hash && explorerBase ? (
         <a
           href={`${explorerBase}/tx/${hash}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2"
+          className="text-emerald-bright underline decoration-emerald-bright/40 underline-offset-4 hover:decoration-emerald-bright"
         >
-          View tx
+          VIEW TX ↗
         </a>
       ) : null}
     </div>
@@ -215,9 +281,16 @@ export function Notice({
   tone?: Tone;
   children: ReactNode;
 }) {
+  const border: Record<Tone, string> = {
+    green: "border-emerald/60 bg-emerald/[0.06] text-emerald-bright",
+    amber: "border-gilt/60 bg-gilt/[0.06] text-gilt",
+    red: "border-seal/60 bg-seal/[0.06] text-seal",
+    zinc: "border-rule bg-paper/[0.03] text-stone",
+    indigo: "border-paper/40 bg-paper/[0.04] text-paper",
+  };
   return (
     <div
-      className={`rounded-xl px-3 py-2 text-xs ring-1 ring-inset ${TONES[tone]}`}
+      className={`border px-3 py-2 font-mono text-[12px] leading-relaxed ${border[tone]}`}
     >
       {children}
     </div>
@@ -226,13 +299,51 @@ export function Notice({
 
 export function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="rounded-xl bg-black/20 px-3 py-2">
-      <div className="text-[11px] uppercase tracking-wide text-zinc-500">
+    <div className="border-t border-rule pt-2">
+      <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-stone">
         {label}
       </div>
-      <div className="mt-0.5 text-sm font-medium text-zinc-100 break-words">
+      <div className="mt-0.5 break-words font-mono text-[15px] text-paper">
         {value}
       </div>
     </div>
   );
+}
+
+/* ---------------------------------------------------- Copyable mono value */
+
+export function CopyText({
+  value,
+  display,
+  className = "",
+}: {
+  value: string;
+  display?: string;
+  className?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard?.writeText(value).then(
+          () => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1200);
+          },
+          () => {},
+        );
+      }}
+      className={`font-mono underline decoration-dotted decoration-mute underline-offset-4 transition-colors hover:decoration-paper ${className}`}
+      title="Copy"
+    >
+      {copied ? "COPIED" : (display ?? value)}
+    </button>
+  );
+}
+
+/* --------------------------------------------------------------- Skeleton */
+
+export function SkeletonBar({ className = "" }: { className?: string }) {
+  return <span className={`inline-block animate-pulse bg-paper/[0.08] ${className}`} />;
 }

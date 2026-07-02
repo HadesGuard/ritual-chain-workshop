@@ -17,9 +17,8 @@ import {
 } from "@/lib/commitment";
 import { useWriteTx } from "@/hooks/useWriteTx";
 import {
-  Card,
-  CardHeader,
-  CardBody,
+  Panel,
+  PanelHeader,
   Field,
   Textarea,
   Button,
@@ -103,45 +102,45 @@ function CommitCard({
   }
 
   return (
-    <Card>
-      <CardHeader
+    <Panel>
+      <PanelHeader
         title="Submit a sealed answer"
-        subtitle="Only a hash goes on-chain now. Come back after the deadline to reveal."
+        subtitle="Only a hash goes on chain now. Return after the deadline to reveal."
       />
-      <CardBody>
-        <form onSubmit={handleCommit} className="space-y-3">
-          <Field label="Your answer (stays on this device)">
-            <Textarea
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              rows={5}
-              placeholder="Write your submission…"
-            />
-          </Field>
-          <Notice tone="indigo">
-            The answer and a random salt are stored in this browser. You must
-            return during the 24h reveal window, from this browser and wallet,
-            or your entry cannot be judged.
-          </Notice>
-          <Button
-            type="submit"
-            disabled={!isConnected || !answer.trim() || tx.isBusy}
-            className="w-full"
-          >
-            {tx.isBusy ? "Committing…" : "Commit sealed answer"}
-          </Button>
-          {!isConnected && (
-            <p className="text-xs text-zinc-500">Connect your wallet to submit.</p>
-          )}
-          <TxStatus
-            state={tx.state}
-            error={tx.error}
-            hash={tx.hash}
-            explorerBase={explorerBase}
+      <form onSubmit={handleCommit} className="space-y-3">
+        <Field label="Your answer (stays on this device)">
+          <Textarea
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            rows={5}
+            placeholder="Write your submission"
           />
-        </form>
-      </CardBody>
-    </Card>
+        </Field>
+        <Notice tone="amber">
+          The answer and a random salt are stored in this browser. You must
+          return during the 24h reveal window, from this browser and wallet, or
+          your entry cannot be judged.
+        </Notice>
+        <Button
+          type="submit"
+          disabled={!isConnected || !answer.trim() || tx.isBusy}
+          className="w-full"
+        >
+          {tx.isBusy ? "Sealing" : "Commit under seal →"}
+        </Button>
+        {!isConnected && (
+          <p className="font-mono text-[11px] text-mute">
+            Connect a wallet to submit.
+          </p>
+        )}
+        <TxStatus
+          state={tx.state}
+          error={tx.error}
+          hash={tx.hash}
+          explorerBase={explorerBase}
+        />
+      </form>
+    </Panel>
   );
 }
 
@@ -189,57 +188,58 @@ function RevealCard({
   }
 
   return (
-    <Card>
-      <CardHeader
+    <Panel>
+      <PanelHeader
         title="Reveal your answer"
-        subtitle="The contract verifies your answer + salt against your commitment."
+        subtitle="The contract verifies your answer and salt against your commitment."
       />
-      <CardBody>
-        <form onSubmit={handleReveal} className="space-y-3">
-          {restored ? (
-            <Notice tone="green">
-              Restored your sealed answer from this browser. Review and reveal.
-            </Notice>
-          ) : (
-            <Notice tone="amber">
-              No saved entry found here. Paste the exact answer and salt you
-              committed with (a different browser or wallet won&apos;t have them).
-            </Notice>
-          )}
-          <Field label="Answer (exactly as committed)">
-            <Textarea
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              rows={5}
-              placeholder="The answer you committed…"
-            />
-          </Field>
-          <Field label="Salt (0x + 64 hex chars)">
-            <Textarea
-              value={salt}
-              onChange={(e) => setSalt(e.target.value.trim())}
-              rows={2}
-              placeholder="0x…"
-            />
-          </Field>
-          <Button
-            type="submit"
-            disabled={!isConnected || !answer || !saltValid || tx.isBusy}
-            className="w-full"
-          >
-            {tx.isBusy ? "Revealing…" : "Reveal answer"}
-          </Button>
-          {!isConnected && (
-            <p className="text-xs text-zinc-500">Connect your wallet to reveal.</p>
-          )}
-          <TxStatus
-            state={tx.state}
-            error={tx.error}
-            hash={tx.hash}
-            explorerBase={explorerBase}
+      <form onSubmit={handleReveal} className="space-y-3">
+        {restored ? (
+          <Notice tone="green">
+            Restored your sealed answer from this browser. Review and reveal.
+          </Notice>
+        ) : (
+          <Notice tone="amber">
+            No stored salt found on this device. Enter the exact answer and salt
+            used at commit time.
+          </Notice>
+        )}
+        <Field label="Answer (exactly as committed)">
+          <Textarea
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            rows={5}
+            placeholder="The answer you committed"
           />
-        </form>
-      </CardBody>
-    </Card>
+        </Field>
+        <Field label="Salt (0x + 64 hex chars)">
+          <Textarea
+            value={salt}
+            onChange={(e) => setSalt(e.target.value.trim())}
+            rows={2}
+            placeholder="0x"
+            className="font-mono text-[13px]"
+          />
+        </Field>
+        <Button
+          type="submit"
+          disabled={!isConnected || !answer || !saltValid || tx.isBusy}
+          className="w-full"
+        >
+          {tx.isBusy ? "Opening" : "Open the seal →"}
+        </Button>
+        {!isConnected && (
+          <p className="font-mono text-[11px] text-mute">
+            Connect a wallet to reveal.
+          </p>
+        )}
+        <TxStatus
+          state={tx.state}
+          error={tx.error}
+          hash={tx.hash}
+          explorerBase={explorerBase}
+        />
+      </form>
+    </Panel>
   );
 }

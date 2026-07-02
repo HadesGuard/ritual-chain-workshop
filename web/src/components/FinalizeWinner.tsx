@@ -9,14 +9,12 @@ import { decodeAiReview } from "@/lib/aiReview";
 import { formatReward } from "@/lib/format";
 import { useWriteTx } from "@/hooks/useWriteTx";
 import {
-  Card,
-  CardHeader,
-  CardBody,
+  Panel,
+  PanelHeader,
   Field,
   Input,
   Button,
   TxStatus,
-  Notice,
 } from "@/components/ui";
 
 const explorerBase = ritualChain.blockExplorers?.default.url;
@@ -69,23 +67,24 @@ export function FinalizeWinner({
   }
 
   return (
-    <Card>
-      <CardHeader
-        title="Finalize winner"
-        subtitle="Pays the reward to the chosen submission. Only one winner."
+    <Panel>
+      <PanelHeader
+        title="Enter judgment"
+        subtitle={`Releases the reward (${formatReward(bounty.reward)}) to one exhibit.`}
       />
-      <CardBody className="space-y-3">
-        <Notice tone="zinc">
-          Only one winner receives the bounty reward (
-          {formatReward(bounty.reward)}).
-        </Notice>
+      <div className="space-y-3">
+        {recommended !== undefined ? (
+          <p className="font-serif text-[18px] leading-snug text-paper">
+            The model recommends exhibit No. {recommended}.
+          </p>
+        ) : null}
 
         <Field
           label="Winner index"
           hint={
             recommended !== undefined
-              ? `AI recommends #${recommended}. You decide the final winner.`
-              : `Choose a submission index (0–${Math.max(count - 1, 0)}).`
+              ? "The recommendation is advisory. Judgment is yours."
+              : `Choose an exhibit index (0 to ${Math.max(count - 1, 0)}).`
           }
         >
           <Input
@@ -94,11 +93,12 @@ export function FinalizeWinner({
             max={Math.max(count - 1, 0)}
             value={winnerIndex}
             onChange={(e) => setOverride(e.target.value)}
+            className="font-mono"
           />
         </Field>
 
         {winnerIndex !== "" && !valid && (
-          <p className="text-xs text-amber-300">
+          <p className="font-mono text-[12px] text-gilt">
             Index must be between 0 and {Math.max(count - 1, 0)}.
           </p>
         )}
@@ -108,7 +108,7 @@ export function FinalizeWinner({
           disabled={!valid || tx.isBusy}
           className="w-full"
         >
-          {tx.isBusy ? "Finalizing…" : "Finalize winner"}
+          {tx.isBusy ? "Entering judgment" : "Enter judgment →"}
         </Button>
 
         <TxStatus
@@ -117,7 +117,7 @@ export function FinalizeWinner({
           hash={tx.hash}
           explorerBase={explorerBase}
         />
-      </CardBody>
-    </Card>
+      </div>
+    </Panel>
   );
 }
