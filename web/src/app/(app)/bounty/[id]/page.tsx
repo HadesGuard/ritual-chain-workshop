@@ -1,9 +1,7 @@
 "use client";
 
-import { use, useEffect } from "react";
-import Link from "next/link";
+import { use } from "react";
 import { BountyView } from "@/components/BountyView";
-import { useRecentBounties } from "@/hooks/useRecentBounties";
 import { Notice } from "@/components/ui";
 
 export default function BountyPage({
@@ -18,31 +16,18 @@ export default function BountyPage({
     const parsed = BigInt(id);
     if (parsed >= 0n) bountyId = parsed;
   } catch {
-    /* non-numeric id — render the invalid state below */
+    /* invalid id */
   }
 
-  const { add } = useRecentBounties();
-  useEffect(() => {
-    if (bountyId !== null) add(bountyId);
-  }, [bountyId, add]);
-
   return (
-    <main className="mx-auto max-w-[1120px] px-5 sm:px-10">
-      {/* Docket line */}
-      <div className="flex items-center justify-between border-b border-line py-3 text-[12px] text-muted">
-        <Link href="/" className="transition-colors hover:text-fg">
-          ← Docket
-        </Link>
-        {bountyId !== null && <span>No. {bountyId.toString()}</span>}
-      </div>
-
-      <div className="pt-8">
-        {bountyId === null ? (
+    <main className="mx-auto max-w-[1180px] px-[26px] pb-[130px]">
+      {bountyId === null ? (
+        <div className="pt-10">
           <Notice tone="amber">&ldquo;{id}&rdquo; is not a valid bounty id.</Notice>
-        ) : (
-          <BountyView bountyId={bountyId} />
-        )}
-      </div>
+        </div>
+      ) : (
+        <BountyView bountyId={bountyId} />
+      )}
     </main>
   );
 }

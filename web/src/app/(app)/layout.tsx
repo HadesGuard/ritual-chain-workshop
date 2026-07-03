@@ -1,5 +1,4 @@
 import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
 
 export default function AppLayout({
   children,
@@ -7,8 +6,7 @@ export default function AppLayout({
   return (
     <>
       <SiteHeader />
-      <div className="flex-1">{children}</div>
-      <SiteFooter />
+      {children}
     </>
   );
 }

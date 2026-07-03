@@ -8,14 +8,7 @@ import type { Bounty } from "@/lib/bounty";
 import { decodeAiReview } from "@/lib/aiReview";
 import { formatReward } from "@/lib/format";
 import { useWriteTx } from "@/hooks/useWriteTx";
-import {
-  Panel,
-  PanelHeader,
-  Field,
-  Input,
-  Button,
-  TxStatus,
-} from "@/components/ui";
+import { TxStatus } from "@/components/ui";
 
 const explorerBase = ritualChain.blockExplorers?.default.url;
 
@@ -32,24 +25,15 @@ export function FinalizeWinner({
 }) {
   const count = Number(bounty.submissionCount);
   const recommended = decodeAiReview(bounty.aiReview)?.parsed?.winnerIndex;
-
-  // The input is prefilled with the AI recommendation until the owner edits it.
-  // `override === null` means "untouched, show the recommendation".
   const [override, setOverride] = useState<string | null>(null);
-  const winnerIndex =
-    override ?? (recommended !== undefined ? String(recommended) : "");
-
+  const winnerIndex = override ?? (recommended !== undefined ? String(recommended) : "");
   const tx = useWriteTx(() => onFinalized());
 
-  // Gate per spec: owner only, judged, not finalized.
   if (!isOwner || !bounty.judged || bounty.finalized) return null;
 
   const idxNum = Number(winnerIndex);
   const valid =
-    winnerIndex !== "" &&
-    Number.isInteger(idxNum) &&
-    idxNum >= 0 &&
-    idxNum < count;
+    winnerIndex !== "" && Number.isInteger(idxNum) && idxNum >= 0 && idxNum < count;
 
   async function handleFinalize() {
     if (!valid || !contractAddress) return;
@@ -67,57 +51,46 @@ export function FinalizeWinner({
   }
 
   return (
-    <Panel>
-      <PanelHeader
-        title="Enter judgment"
-        subtitle={`Releases the reward (${formatReward(bounty.reward)}) to one exhibit.`}
-      />
-      <div className="space-y-3">
-        {recommended !== undefined ? (
-          <p className="font-sans text-[18px] leading-snug text-fg">
-            The model recommends exhibit No. {recommended}.
-          </p>
-        ) : null}
-
-        <Field
-          label="Winner index"
-          hint={
-            recommended !== undefined
-              ? "The recommendation is advisory. Judgment is yours."
-              : `Choose an exhibit index (0 to ${Math.max(count - 1, 0)}).`
-          }
-        >
-          <Input
+    <div className="overflow-hidden rounded-[14px] border border-line bg-surface">
+      <div className="px-6 pb-4 pt-[22px]">
+        <div className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-indigo">
+          Finalize · you have the gavel
+        </div>
+        <div className="text-[22px] font-semibold">Choose the winner</div>
+        <div className="mt-1.5 text-[13px] leading-[1.5] text-text2">
+          {recommended !== undefined ? (
+            <>
+              The AI recommends entry <b>#{recommended}</b>. You can accept it or override — the
+              contract pays whoever you finalize.
+            </>
+          ) : (
+            <>Enter the winning entry index. The contract pays whoever you finalize.</>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-wrap items-end gap-4 border-t border-line px-6 py-5">
+        <label className="block">
+          <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+            Winner index (0 to {Math.max(count - 1, 0)})
+          </span>
+          <input
             type="number"
             min={0}
             max={Math.max(count - 1, 0)}
             value={winnerIndex}
             onChange={(e) => setOverride(e.target.value)}
-            className="font-mono"
+            className="w-28 rounded-[12px] border border-line bg-surface px-4 py-3 font-mono text-[16px] outline-none focus:border-indigo"
           />
-        </Field>
-
-        {winnerIndex !== "" && !valid && (
-          <p className="font-mono text-[12px] text-gilt">
-            Index must be between 0 and {Math.max(count - 1, 0)}.
-          </p>
-        )}
-
-        <Button
+        </label>
+        <button
           onClick={handleFinalize}
           disabled={!valid || tx.isBusy}
-          className="w-full"
+          className="rounded-[12px] border border-green-deep bg-green px-6 py-3.5 text-[14px] font-semibold text-green-tint disabled:opacity-50"
         >
-          {tx.isBusy ? "Entering judgment" : "Enter judgment →"}
-        </Button>
-
-        <TxStatus
-          state={tx.state}
-          error={tx.error}
-          hash={tx.hash}
-          explorerBase={explorerBase}
-        />
+          {tx.isBusy ? "Paying…" : `Pay winner · ${formatReward(bounty.reward)}`}
+        </button>
       </div>
-    </Panel>
+      <TxStatus state={tx.state} error={tx.error} hash={tx.hash} explorerBase={explorerBase} />
+    </div>
   );
 }

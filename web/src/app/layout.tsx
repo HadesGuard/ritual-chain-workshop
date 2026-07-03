@@ -1,29 +1,24 @@
 import type { Metadata } from "next";
-import Script from "next/script";
-import { Hanken_Grotesk, Source_Serif_4, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const hanken = Hanken_Grotesk({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-hanken",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
 });
 
-const sourceSerif = Source_Serif_4({
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  style: ["normal", "italic"],
-  variable: "--font-source-serif",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-mono",
 });
 
 export const metadata: Metadata = {
   title: "SealedVerdict",
   description:
-    "Commit-reveal bounties judged by AI on Ritual chain. Answers stay sealed until the deadline; Ritual AI ranks revealed submissions; the owner enters judgment.",
+    "Post a bounty, get sealed entries, pay the best one. Answers stay hidden until the deadline; an AI scores them; you pick the winner and the contract pays.",
 };
 
 export default function RootLayout({
@@ -34,13 +29,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      suppressHydrationWarning
-      className={`${hanken.variable} ${sourceSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-screen flex-col bg-bg text-fg">
-        <Script id="sv-theme-init" strategy="beforeInteractive">
-          {`try{if(localStorage.getItem('sv-theme')==='light')document.documentElement.classList.add('light')}catch(e){}`}
-        </Script>
+      <body className="min-h-screen bg-bg text-ink">
         <Providers>{children}</Providers>
       </body>
     </html>

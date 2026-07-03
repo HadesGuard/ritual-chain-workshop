@@ -1,117 +1,113 @@
 @import "tailwindcss";
 
 /*
-  SealedVerdict — Claude Design System (CDS) flavor. Warm neutral surfaces,
-  0.5px hairlines, soft radii, restraint. Clay is Claude's color (reserved for
-  the AI judging step); accent blue is for user actions; serif is Claude's
-  voice (the AI review). Role tokens flip light/dark via `.light` / default.
+  SealedVerdict — implementation of the designer's SealedVerdict.dc.html.
+  Single light theme: #f6f7f9 canvas, white cards, #ebedf1 hairlines, indigo
+  #5b54e6 primary, dark #171922 panels, green rewards, IBM Plex Mono for data,
+  Plus Jakarta Sans for everything else.
 */
 
-:root {
-  /* Dark (default) — warm charcoal canvas, like the Claude app */
-  --bg: #262624;
-  --surface: #30302e; /* cards, panels */
-  --surface-1: #2b2b29; /* wells, insets */
-  --fg: #f2f0ea;
-  --muted: #a8a59c;
-  --faint: #7c7a72;
-  --edge: #423f39; /* hairline border */
-  --edge-strong: #55514a;
-  --on-accent: #ffffff;
-  --emerald: #3b6fd4; /* accent blue fill — user actions */
-  --emerald-bright: #9bbcf2; /* accent text / links on dark */
-  --brand: #d97757; /* clay — Claude / AI judging */
-  --on-brand: #2a1509;
-  --gilt: #d8a648; /* amber — reveal / pending */
-  --seal: #c8553d; /* sealing-wax red — the seal + danger */
-  --mint: #5bb98c; /* green — settled / success */
-}
-
-html.light {
-  --bg: #f7f5ef;
-  --surface: #ffffff;
-  --surface-1: #f1efe8;
-  --fg: #26241f;
-  --muted: #6e6b63;
-  --faint: #9b988e;
-  --edge: #e6e3da;
-  --edge-strong: #d5d1c6;
-  --on-accent: #ffffff;
-  --emerald: #2f6bd6; /* accent blue */
-  --emerald-bright: #235bbd;
-  --brand: #c15f3c; /* clay */
-  --on-brand: #ffffff;
-  --gilt: #b07d1a;
-  --seal: #b23a2e;
-  --mint: #2f8a5f;
-}
-
 @theme inline {
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-1: var(--surface-1);
-  --color-fg: var(--fg);
-  --color-muted: var(--muted);
-  --color-faint: var(--faint);
-  --color-edge: var(--edge);
-  --color-edge-strong: var(--edge-strong);
-  --color-line: var(--edge);
-  --color-line2: var(--edge);
-  --color-on-accent: var(--on-accent);
-  --color-emerald: var(--emerald);
-  --color-emerald-bright: var(--emerald-bright);
-  --color-brand: var(--brand);
-  --color-on-brand: var(--on-brand);
-  --color-gilt: var(--gilt);
-  --color-seal: var(--seal);
-  --color-mint: var(--mint);
+  --color-bg: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-ink: #191b22;
+  --color-panel: #171922;
+  --color-panel-line: #262a35;
+  --color-line: #ebedf1;
+  --color-text2: #475467;
+  --color-text3: #344054;
+  --color-muted: #8a94a6;
 
-  --font-sans: var(--font-hanken);
-  --font-serif: var(--font-source-serif);
-  --font-mono: var(--font-jetbrains);
+  --color-indigo: #5b54e6;
+  --color-indigo-deep: #4840c4;
+  --color-indigo-deeper: #3a33a8;
+  --color-indigo-soft: #a5a1f2;
+  --color-indigo-tint: #efeefc;
+  --color-indigo-tint2: #ecebfb;
+
+  --color-green: #12946a;
+  --color-green-deep: #0e7a57;
+  --color-green-tint: #e7f8f0;
+  --color-green-bright: #34d399;
+
+  --color-wax: #c0392b;
+  --color-wax-deep: #7c1f16;
+  --color-wax-tint: #fbeae7;
+  --color-red-tint: #fef3f2;
+  --color-red-soft: #fda29b;
+
+  --color-amber: #f5c84b;
+  --color-amber-text: #b7791f;
+  --color-amber-text2: #8a6d1e;
+  --color-amber-tint: #fffaed;
+
+  --color-on-panel: #ebedf1;
+  --color-on-panel-soft: #f6f7f9;
+
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
+  --font-mono: var(--font-plex-mono);
 }
 
-html {
-  font-optical-sizing: auto;
+* {
+  box-sizing: border-box;
 }
-
+html,
 body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: #f6f7f9;
+  color: #191b22;
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
-
 ::selection {
-  background: color-mix(in srgb, var(--emerald) 22%, transparent);
+  background: #5b54e6;
+  color: #f9fafb;
 }
 
-/* soft elevation for popovers only; in-flow cards stay flat with a hairline */
-.shadow-pop {
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.12),
-    0 2px 6px rgba(0, 0, 0, 0.08);
+@keyframes sv-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes sv-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sv-seal-crack {
+  0% { transform: scale(1) rotate(0deg); opacity: 1; }
+  18% { transform: scale(1.09) rotate(-3deg); }
+  38% { transform: scale(1.04) rotate(2deg); }
+  100% { transform: scale(1.7) rotate(9deg); opacity: 0; }
+}
+@keyframes sv-shard-l {
+  0% { transform: translate(0, 0) rotate(0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(-90px, 64px) rotate(-46deg); opacity: 0; }
+}
+@keyframes sv-shard-r {
+  0% { transform: translate(0, 0) rotate(0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(94px, 58px) rotate(52deg); opacity: 0; }
+}
+@keyframes sv-doc-rise {
+  0% { transform: translateY(30px) scale(0.96); opacity: 0; filter: blur(6px); }
+  100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+}
+@keyframes sv-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes sv-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes sv-tick {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
 }
 
-@keyframes seal-open {
-  from {
-    opacity: 0;
-    transform: translateY(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-seal-open {
-  animation: seal-open 200ms ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+.sv-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.sv-scroll::-webkit-scrollbar-thumb { background: #ebedf1; border-radius: 0; }
+.sv-scroll::-webkit-scrollbar-track { background: #ebedf1; }
