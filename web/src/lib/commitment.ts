@@ -78,3 +78,82 @@ export function clearCommitment(
     /* ignore */
   }
 }
+
+const PREFIX = "sealed-verdict:";
+
+export type SavedEntry = {
+  contract: string;
+  bountyId: string;
+  account: string;
+  answer: string;
+  salt: Hex;
+};
+
+/** Every saved commitment in this browser, across bounties/wallets. */
+export function exportCommitments(): SavedEntry[] {
+  const out: SavedEntry[] = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(PREFIX)) continue;
+      const [, contract, bountyId, account] = key.split(":");
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const v = JSON.parse(raw) as Partial<StoredCommitment>;
+        if (typeof v.answer === "string" && /^0x[0-9a-fA-F]{64}$/.test(v.salt ?? "")) {
+          out.push({ contract, bountyId, account, answer: v.answer, salt: v.salt as Hex });
+        }
+      } catch {
+        /* skip malformed */
+      }
+    }
+  } catch {
+    /* storage blocked */
+  }
+  return out;
+}
+
+/** Merge imported entries back into localStorage. Returns count written. */
+export function importCommitments(entries: SavedEntry[]): number {
+  let n = 0;
+  for (const e of entries) {
+    if (
+      !e ||
+      typeof e.contract !== "string" ||
+      typeof e.bountyId !== "string" ||
+      typeof e.account !== "string" ||
+      typeof e.answer !== "string" ||
+      !/^0x[0-9a-fA-F]{64}$/.test(e.salt ?? "")
+    ) {
+      continue;
+    }
+    try {
+      localStorage.setItem(
+        `${PREFIX}${e.contract.toLowerCase()}:${e.bountyId}:${e.account.toLowerCase()}`,
+        JSON.stringify({ answer: e.answer, salt: e.salt }),
+      );
+      n++;
+    } catch {
+      /* ignore */
+    }
+  }
+  return n;
+}
+
+/** Bounty ids this wallet has a saved commitment for on this contract. */
+export function listMyBountyIds(contract: Address, account: Address): bigint[] {
+  const ids: bigint[] = [];
+  const c = contract.toLowerCase();
+  const a = account.toLowerCase();
+  for (const e of exportCommitments()) {
+    if (e.contract.toLowerCase() === c && e.account.toLowerCase() === a) {
+      try {
+        ids.push(BigInt(e.bountyId));
+      } catch {
+        /* skip */
+      }
+    }
+  }
+  return ids.sort((x, y) => (x > y ? -1 : 1));
+}

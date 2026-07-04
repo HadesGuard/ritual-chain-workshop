@@ -20,6 +20,7 @@ export function SvMark({ size = 32 }: { size?: number }) {
 export function SiteHeader() {
   const pathname = usePathname();
   const onCreate = pathname?.startsWith("/create");
+  const onMe = pathname?.startsWith("/me");
 
   const navItem = (active: boolean) =>
     active
@@ -35,11 +36,14 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-1">
-          <Link href="/" className={navItem(!onCreate)}>
+          <Link href="/" className={navItem(!onCreate && !onMe)}>
             Bounties
           </Link>
           <Link href="/create" className={navItem(!!onCreate)}>
             Post a bounty
+          </Link>
+          <Link href="/me" className={navItem(!!onMe)}>
+            Activity
           </Link>
         </div>
 

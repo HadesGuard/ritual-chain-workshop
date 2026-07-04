@@ -26,9 +26,15 @@ const PHASE: Record<BountyStatus, { label: string; cls: string; dot: string }> =
 
 export function BountyRegistry({
   filter = "all",
+  owner,
+  hideSearch = false,
+  emptyText,
   onOpen,
 }: {
   filter?: RegistryFilter;
+  owner?: string;
+  hideSearch?: boolean;
+  emptyText?: string;
   onOpen: (id: bigint) => void;
 }) {
   const [query, setQuery] = useState("");
@@ -59,35 +65,37 @@ export function BountyRegistry({
 
   return (
     <>
-      <form
-        onSubmit={submitSearch}
-        className="mb-4 flex items-center rounded-full border border-line bg-surface"
-      >
-        <span className="flex items-center px-4 py-2.5 text-muted">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4-4" />
-          </svg>
-        </span>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by bounty ID…"
-          className="flex-1 bg-transparent py-2.5 pr-4 font-mono text-[12.5px] text-ink outline-none placeholder:text-muted"
-        />
-      </form>
+      {!hideSearch && (
+        <form
+          onSubmit={submitSearch}
+          className="mb-4 flex items-center rounded-full border border-line bg-surface"
+        >
+          <span className="flex items-center px-4 py-2.5 text-muted">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4-4" />
+            </svg>
+          </span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by bounty ID…"
+            className="flex-1 bg-transparent py-2.5 pr-4 font-mono text-[12.5px] text-ink outline-none placeholder:text-muted"
+          />
+        </form>
+      )}
 
       {ids.length === 0 ? (
         <div className="rounded-[16px] border border-line bg-surface px-6 py-[52px] text-center backdrop-blur-md">
           <div className="text-[18px] font-semibold">No bounties yet</div>
           <p className="mx-auto mt-1.5 max-w-[40ch] text-[13px] text-muted">
-            Post the first one. Every entry stays sealed until the deadline.
+            {emptyText ?? "Post the first one. Every entry stays sealed until the deadline."}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {ids.map((id) => (
-            <BountyCard key={id} id={BigInt(id)} filter={filter} onOpen={onOpen} />
+            <BountyCard key={id} id={BigInt(id)} filter={filter} owner={owner} onOpen={onOpen} />
           ))}
         </div>
       )}
@@ -98,10 +106,12 @@ export function BountyRegistry({
 function BountyCard({
   id,
   filter,
+  owner,
   onOpen,
 }: {
   id: bigint;
   filter: RegistryFilter;
+  owner?: string;
   onOpen: (id: bigint) => void;
 }) {
   const now = useNow();
@@ -126,6 +136,7 @@ function BountyCard({
 
   const b = parseBounty(data as never);
   if (/^0x0+$/.test(b.owner)) return null;
+  if (owner && b.owner.toLowerCase() !== owner.toLowerCase()) return null;
 
   const status = getBountyStatus(b, now / 1000);
   if (filter !== "all" && status !== filter) return null;
