@@ -1,5 +1,6 @@
 import { keccak256, encodePacked, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { hiddenContractAddress } from "@/config/contract";
 
 /**
  * Client-side reproduction of RitualHiddenBounty's attestation math, used by the
@@ -15,10 +16,10 @@ export const DEMO_ENCLAVE_PRIVATE_KEY =
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" as const;
 export const demoEnclave = privateKeyToAccount(DEMO_ENCLAVE_PRIVATE_KEY);
 
-// Sample values the digest binds to. Fixed so the page renders the same numbers
-// every time; the real ones come from the bounty and the connected chain.
+// The digest binds to the real deployed contract on Ritual, so the numbers the
+// page shows are exactly what this contract would compute for the sample set.
 export const DEMO_CHAIN_ID = 1979n;
-export const DEMO_CONTRACT: Address = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+export const DEMO_CONTRACT: Address = hiddenContractAddress;
 export const DEMO_BOUNTY_ID = 0n;
 
 export type DemoSubmission = {

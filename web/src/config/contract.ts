@@ -20,6 +20,18 @@ export const contractAddress: Address | undefined =
 /** True when the contract address env var is present and well-formed. */
 export const isContractConfigured = Boolean(contractAddress);
 
+const rawHiddenAddress = process.env.NEXT_PUBLIC_HIDDEN_CONTRACT_ADDRESS?.trim();
+
+/**
+ * Deployed RitualHiddenBounty (advanced track) address. Falls back to the known
+ * Ritual deployment so the /advanced page is self-contained, but an env var
+ * overrides it for other networks.
+ */
+export const hiddenContractAddress: Address =
+  rawHiddenAddress && /^0x[0-9a-fA-F]{40}$/.test(rawHiddenAddress)
+    ? (rawHiddenAddress as Address)
+    : "0x5DCEBc52D5014F1d11352A8639178457C9e7d397";
+
 /** Ritual LLM executor / callback address used when encoding `judgeAll` input. */
 export const executorAddress: Address =
   (process.env.NEXT_PUBLIC_RITUAL_EXECUTOR_ADDRESS?.trim() as Address | undefined) ??
