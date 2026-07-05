@@ -105,19 +105,19 @@ function CommitCard({
 
   return (
     <div className="overflow-hidden rounded-[14px] border border-line bg-surface">
-      <div className="flex items-stretch border-b-[1.5px] border-line">
-        <div className="flex-1 px-[26px] py-[22px]">
+      <div className="flex flex-col items-stretch border-b-[1.5px] border-line sm:flex-row">
+        <div className="flex-1 px-5 py-[18px] sm:px-[26px] sm:py-[22px]">
           <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-indigo">
             Sealing closes in
           </div>
           <div className="flex items-center gap-3">
-            <span className="h-[9px] w-[9px] rounded-full bg-indigo [animation:sv-tick_1s_steps(1)_infinite]" />
-            <span className="font-mono text-[40px] font-semibold tracking-[0.02em]">
+            <span className="h-[9px] w-[9px] shrink-0 rounded-full bg-indigo [animation:sv-tick_1s_steps(1)_infinite]" />
+            <span className="font-mono text-[28px] font-semibold tracking-[0.02em] sm:text-[40px]">
               {countdown(bounty.deadline, now)}
             </span>
           </div>
         </div>
-        <div className="flex w-[40%] flex-col justify-center border-l-[1.5px] border-line bg-bg px-6 py-[22px]">
+        <div className="flex w-full flex-col justify-center border-t-[1.5px] border-line bg-bg px-5 py-4 sm:w-[40%] sm:border-l-[1.5px] sm:border-t-0 sm:px-6 sm:py-[22px]">
           <div className="text-[12.5px] leading-[1.55] text-text2">
             Your answer is stored as a hash.{" "}
             <b>No one can read it, not even the organizer, until you unseal it after the deadline.</b>
@@ -242,14 +242,14 @@ function RevealCard({
 
   return (
     <div className="overflow-hidden rounded-[14px] border border-line bg-surface">
-      <div className="flex items-center justify-between border-b-[1.5px] border-line px-[26px] py-[22px]">
+      <div className="flex items-center justify-between border-b-[1.5px] border-line px-5 py-[18px] sm:px-[26px] sm:py-[22px]">
         <div>
           <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-green">
             Reveal window closes in
           </div>
           <div className="flex items-center gap-[11px]">
-            <span className="h-[9px] w-[9px] rounded-full bg-green [animation:sv-tick_1s_steps(1)_infinite]" />
-            <span className="font-mono text-[38px] font-semibold">
+            <span className="h-[9px] w-[9px] shrink-0 rounded-full bg-green [animation:sv-tick_1s_steps(1)_infinite]" />
+            <span className="font-mono text-[26px] font-semibold sm:text-[38px]">
               {countdown(revealDeadline(bounty), now)}
             </span>
           </div>

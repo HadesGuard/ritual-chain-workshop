@@ -107,7 +107,7 @@ export default function CreatePage() {
 
       <div className="grid grid-cols-1 border-b-[1.5px] border-l-[1.5px] border-r-[1.5px] border-line lg:grid-cols-[1.55fr_1fr]">
         {/* FORM */}
-        <div className="flex flex-col gap-[34px] border-r-[1.5px] border-line px-[42px] py-10">
+        <div className="flex flex-col gap-[34px] border-line px-5 py-8 sm:px-[42px] sm:py-10 lg:border-r-[1.5px]">
           <div>
             <div className={labelCls}>01 · Title of the challenge</div>
             <input

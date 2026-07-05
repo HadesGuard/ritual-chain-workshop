@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useReadContract } from "wagmi";
 import sealedVerdictAbi from "@/abi/SealedVerdict";
 import { contractAddress } from "@/config/contract";
@@ -48,8 +48,28 @@ export function BountyRegistry({
   });
 
   const next = nextId ? Number(nextId) : 1;
+  // An owner-scoped view ("bounties you created") must search every id, not
+  // just the most recent ones -- otherwise an older bounty silently vanishes
+  // from "/me" once 12+ newer bounties exist. Only cap the general browse view.
+  const cap = owner ? Infinity : 12;
   const ids: number[] = [];
-  for (let i = next - 1; i >= 1 && ids.length < 12; i--) ids.push(i);
+  for (let i = next - 1; i >= 1 && ids.length < cap; i--) ids.push(i);
+
+  // Each card decides its own visibility (owner/status filter) after its data
+  // loads. Track which ids are currently hidden so we can show a "no results"
+  // message instead of a silently blank grid when every card hides itself.
+  const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
+  const markHidden = useCallback((id: number, hidden: boolean) => {
+    setHiddenIds((prev) => {
+      const isHidden = prev.has(id);
+      if (isHidden === hidden) return prev;
+      const next = new Set(prev);
+      if (hidden) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+  const allHidden = ids.length > 0 && ids.every((id) => hiddenIds.has(id));
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -85,20 +105,32 @@ export function BountyRegistry({
         </form>
       )}
 
-      {ids.length === 0 ? (
+      {ids.length === 0 || allHidden ? (
         <div className="rounded-[16px] border border-line bg-surface px-6 py-[52px] text-center backdrop-blur-md">
-          <div className="text-[18px] font-semibold">No bounties yet</div>
+          <div className="text-[18px] font-semibold">
+            {ids.length === 0 ? "No bounties yet" : "No bounties match this filter"}
+          </div>
           <p className="mx-auto mt-1.5 max-w-[40ch] text-[13px] text-muted">
-            {emptyText ?? "Post the first one. Every entry stays sealed until the deadline."}
+            {ids.length === 0
+              ? emptyText ?? "Post the first one. Every entry stays sealed until the deadline."
+              : "Try a different tab, or clear the filter."}
           </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      ) : null}
+      {ids.length > 0 ? (
+        <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 ${allHidden ? "hidden" : ""}`}>
           {ids.map((id) => (
-            <BountyCard key={id} id={BigInt(id)} filter={filter} owner={owner} onOpen={onOpen} />
+            <BountyCard
+              key={id}
+              id={BigInt(id)}
+              filter={filter}
+              owner={owner}
+              onOpen={onOpen}
+              onVisibility={(hidden) => markHidden(id, hidden)}
+            />
           ))}
         </div>
-      )}
+      ) : null}
     </>
   );
 }
@@ -108,11 +140,13 @@ function BountyCard({
   filter,
   owner,
   onOpen,
+  onVisibility,
 }: {
   id: bigint;
   filter: RegistryFilter;
   owner?: string;
   onOpen: (id: bigint) => void;
+  onVisibility: (hidden: boolean) => void;
 }) {
   const now = useNow();
   const { data } = useReadContract({
@@ -124,6 +158,21 @@ function BountyCard({
     query: { enabled: !!contractAddress },
   });
 
+  const b = data ? parseBounty(data as never) : null;
+  const status = b ? getBountyStatus(b, now / 1000) : null;
+  const hidden =
+    !!b &&
+    (/^0x0+$/.test(b.owner) ||
+      (!!owner && b.owner.toLowerCase() !== owner.toLowerCase()) ||
+      (filter !== "all" && status !== filter));
+
+  // Report visibility once data has actually loaded -- while loading (b is
+  // still null) we don't know yet, so don't count this card as hidden and
+  // risk the parent showing "no results" while the real answer is pending.
+  useEffect(() => {
+    if (b) onVisibility(hidden);
+  }, [b, hidden, onVisibility]);
+
   if (!data) {
     return (
       <div className="rounded-[16px] border border-line bg-surface p-5 backdrop-blur-md">
@@ -133,20 +182,16 @@ function BountyCard({
       </div>
     );
   }
+  if (!b || hidden) return null;
 
-  const b = parseBounty(data as never);
-  if (/^0x0+$/.test(b.owner)) return null;
-  if (owner && b.owner.toLowerCase() !== owner.toLowerCase()) return null;
-
-  const status = getBountyStatus(b, now / 1000);
-  if (filter !== "all" && status !== filter) return null;
-
-  const ph = PHASE[status];
+  const ph = PHASE[status!];
+  // formatRelative already prefixes "in " (e.g. "in 11h 29m"), so these
+  // templates must not add their own "in" too.
   const closes =
     status === "open"
-      ? `Closes in ${formatRelative(b.deadline)}`
+      ? `Closes ${formatRelative(b.deadline)}`
       : status === "reveal"
-        ? `Reveal in ${formatRelative(revealDeadline(b))}`
+        ? `Reveal closes ${formatRelative(revealDeadline(b))}`
         : status === "finalized"
           ? "Settled"
           : "Awaiting judgment";

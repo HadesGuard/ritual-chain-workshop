@@ -97,7 +97,7 @@ export default function AdvancedPage() {
         {steps.map((s) => (
           <div
             key={s.n}
-            className="flex flex-col gap-3 rounded-[16px] border border-line bg-surface p-5 backdrop-blur-md sm:flex-row sm:items-center sm:gap-5"
+            className="flex flex-col gap-3 rounded-[16px] border border-line bg-surface p-5 backdrop-blur-md md:flex-row md:items-center md:gap-5"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-white/[0.05] font-mono text-[14px] font-semibold text-indigo-soft">
               {s.n}
@@ -106,7 +106,7 @@ export default function AdvancedPage() {
               <div className="text-[15px] font-semibold">{s.title}</div>
               <p className="mt-1 text-[13px] leading-[1.55] text-text2">{s.body}</p>
             </div>
-            <code className="shrink-0 rounded-[10px] bg-bg/60 px-3 py-2 font-mono text-[11px] text-green">
+            <code className="max-w-full shrink-0 whitespace-normal break-words rounded-[10px] bg-bg/60 px-3 py-2 font-mono text-[11px] text-green md:max-w-[280px]">
               {s.fn}
             </code>
           </div>
