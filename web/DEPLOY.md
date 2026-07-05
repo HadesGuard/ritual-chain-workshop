@@ -18,7 +18,7 @@ required; everything else has a working default baked into the app.
 
 | Variable | Value | Required |
 | --- | --- | --- |
-| `NEXT_PUBLIC_CONTRACT_ADDRESS` | `0x712A26E121c12F2e6D576a7CE5A2be21Be939652` | yes (SealedVerdict) |
+| `NEXT_PUBLIC_CONTRACT_ADDRESS` | `0xa209d966d235e4e7130c5af1a7b08f665abfe170` | yes (SealedVerdict) |
 | `NEXT_PUBLIC_HIDDEN_CONTRACT_ADDRESS` | `0x5DCEBc52D5014F1d11352A8639178457C9e7d397` | no (RitualHiddenBounty, falls back to this) |
 
 Other optional overrides (RPC URL, chain id, LLM executor address, WalletConnect
