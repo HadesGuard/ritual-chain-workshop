@@ -30,7 +30,7 @@ const rawHiddenAddress = process.env.NEXT_PUBLIC_HIDDEN_CONTRACT_ADDRESS?.trim()
 export const hiddenContractAddress: Address =
   rawHiddenAddress && /^0x[0-9a-fA-F]{40}$/.test(rawHiddenAddress)
     ? (rawHiddenAddress as Address)
-    : "0x5DCEBc52D5014F1d11352A8639178457C9e7d397";
+    : "0x7c7c3305896dBC4920b28a752a591175BdDDE5Bf";
 
 /**
  * Ritual LLM executor address used when encoding `judgeAll` input. This is a

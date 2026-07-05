@@ -19,7 +19,7 @@ required; everything else has a working default baked into the app.
 | Variable | Value | Required |
 | --- | --- | --- |
 | `NEXT_PUBLIC_CONTRACT_ADDRESS` | `0xa209d966d235e4e7130c5af1a7b08f665abfe170` | yes (SealedVerdict) |
-| `NEXT_PUBLIC_HIDDEN_CONTRACT_ADDRESS` | `0x5DCEBc52D5014F1d11352A8639178457C9e7d397` | no (RitualHiddenBounty, falls back to this) |
+| `NEXT_PUBLIC_HIDDEN_CONTRACT_ADDRESS` | `0x7c7c3305896dBC4920b28a752a591175BdDDE5Bf` | no (RitualHiddenBounty, falls back to this) |
 
 Other optional overrides (RPC URL, chain id, LLM executor address, WalletConnect
 project id) all have sensible defaults for the standard Ritual deployment. See

@@ -4,7 +4,7 @@ import { AttestationDemo } from "@/components/AttestationDemo";
 const CONTRACT_URL =
   "https://github.com/HadesGuard/ritual-chain-workshop/blob/main/hardhat/contracts/RitualHiddenBounty.sol";
 
-const HIDDEN_ADDRESS = "0x5DCEBc52D5014F1d11352A8639178457C9e7d397";
+const HIDDEN_ADDRESS = "0x7c7c3305896dBC4920b28a752a591175BdDDE5Bf";
 const SCAN_URL = `https://explorer.ritualfoundation.org/address/${HIDDEN_ADDRESS}`;
 
 const steps = [
@@ -54,10 +54,10 @@ export default function AdvancedPage() {
           href={SCAN_URL}
           target="_blank"
           rel="noreferrer"
-          className="mt-5 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 font-mono text-[11px] text-text2 transition hover:border-indigo-soft"
+          className="mt-5 inline-flex items-center gap-2 rounded-full border border-green/40 bg-green-tint px-3.5 py-1.5 font-mono text-[11px] text-green-bright transition hover:border-green"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-indigo-soft" />
-          On-chain on Ritual · {HIDDEN_ADDRESS.slice(0, 6)}…{HIDDEN_ADDRESS.slice(-4)} →
+          <span className="h-1.5 w-1.5 rounded-full bg-green shadow-[0_0_8px_rgba(53,208,127,0.8)]" />
+          Deployed on Ritual · {HIDDEN_ADDRESS.slice(0, 6)}…{HIDDEN_ADDRESS.slice(-4)} →
         </a>
       </div>
 
@@ -124,21 +124,19 @@ export default function AdvancedPage() {
       {/* Status */}
       <h2 className="mt-14 mb-4 text-[22px] font-bold tracking-[-0.01em]">Where this stands</h2>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-[16px] border border-wax/30 bg-wax-tint p-6 backdrop-blur-md">
-          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-wax">
-            Deployed, but stale
+        <div className="rounded-[16px] border border-green/30 bg-green-tint p-6 backdrop-blur-md">
+          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-green">
+            Live on Ritual
           </div>
           <p className="text-[13.5px] leading-[1.6] text-text2">
             The source is unit-tested (submission, judging, and the full set of attestation
-            reverts) and the math in the demo above is the same math it runs. But this on-chain
-            instance predates a chain-specific fix: Ritual reports{" "}
-            <code className="text-[12px]">block.timestamp</code> in milliseconds, not seconds, so{" "}
-            <code className="text-[12px]">createBounty</code>{" "}
-            here reverts for any real deadline. The fix is in the source; this address
-            hasn&apos;t been redeployed with it yet.
+            reverts) and this on-chain instance is a byte-for-byte match: the same fixed source,
+            including the chain-specific <code className="text-[12px]">block.timestamp</code>{" "}
+            normalization Ritual needs, deployed live. The math in the demo above is the same math
+            it runs.
           </p>
           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[12px]">
-            <a href={SCAN_URL} target="_blank" rel="noreferrer" className="text-wax underline">
+            <a href={SCAN_URL} target="_blank" rel="noreferrer" className="text-green-bright underline">
               {HIDDEN_ADDRESS.slice(0, 10)}…{HIDDEN_ADDRESS.slice(-6)} on RitualScan
             </a>
             <a href={CONTRACT_URL} target="_blank" rel="noreferrer" className="text-indigo-soft underline">
